@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.ReturnMapper">
+	<resultMap id="BaseResultMap" type="Returns">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="UserNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="OrderNo" property="orderNo" jdbcType="VARCHAR" />
+		<result column="OrderDetailId" property="orderDetailId" jdbcType="BIGINT" />
+		<result column="ReturnNo" property="returnNo" jdbcType="VARCHAR" />
+		<result column="ReturnNum" property="returnNum" jdbcType="INTEGER" />
+		<result column="ReturnType" property="returnType" jdbcType="INTEGER" />
+		<result column="ReturnState" property="returnState" jdbcType="INTEGER" />
+		<result column="DeliverNo" property="deliverNo" jdbcType="VARCHAR" />
+		<result column="DeliverName" property="deliverName" jdbcType="VARCHAR" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<sql id="BaseField">
+		ID,UserNo,OrderNo,OrderDetailId,ReturnNo,ReturnNum,ReturnType,ReturnState,DeliverNo,DeliverName,CreateTime 
+	</sql>
+	
+	<insert id="insert" parameterType="Returns" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO dn_return(UserNo,OrderNo,OrderDetailId,ReturnNo,ReturnNum,ReturnType,ReturnState,CreateTime)
+		values(#{userNo,jdbcType=VARCHAR},#{orderNo,jdbcType=VARCHAR},#{orderDetailId,jdbcType=BIGINT},#{returnNo,jdbcType=VARCHAR},
+				#{returnNum,jdbcType=INTEGER},#{returnType,jdbcType=INTEGER},#{returnState,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<update id="update" parameterType="Returns">
+		UPDATE dn_return
+		<set>
+				ReturnState = #{returnState,jdbcType=INTEGER},
+			<if test="updateBy!=null">
+				UpdateBy = #{updateBy,jdbcType=VARCHAR},
+			</if>
+			UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+	<select id="getReturnByReturnNo" parameterType="string" resultMap="BaseResultMap">
+		SELECT <include refid="BaseField"></include> from dn_return where ReturnNo = #{returnNo,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getReturnsList" parameterType="map" resultMap="BaseResultMap">
+		SELECT <include refid="BaseField"></include> from dn_return
+		<where>
+			OrderNo = #{orderNo,jdbcType=VARCHAR}
+			and OrderDetailId = #{orderDetailId,jdbcType=BIGINT} 
+			<if test="returnType!=null">
+				and ReturnType = #{returnType,jdbcType=INTEGER}
+			</if>
+			<if test="returnState!=null">
+				and ReturnState = #{returnState,jdbcType=INTEGER}
+			</if>
+		</where>
+	</select>
+	
+</mapper> 

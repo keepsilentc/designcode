@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.CarouselMapper">
+	<resultMap id="BaseResultMap" type="Carousel">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="Type" property="type" jdbcType="INTEGER" />
+		<result column="Picture" property="picture" jdbcType="BIGINT" />
+		<result column="OrderBy" property="orderBy" jdbcType="INTEGER" />
+		<result column="IsEnable" property="isEnable" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<select id="getCarouselList" resultMap="BaseResultMap">
+		SELECT ID,Type,Picture from DN_Carousel where IsEnable = 1 order by orderBy
+	</select>
+	
+</mapper> 

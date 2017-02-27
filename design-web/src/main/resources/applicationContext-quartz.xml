@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+	
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">  
+       <property name="triggers">  
+           <list>  
+              <ref bean="orderTrigger"/>  
+           </list>  
+       </property>  
+       <property name="autoStartup" value="true"/>  
+	</bean> 
+    <bean id="orderTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">  
+       <property name="jobDetail" ref="orderJobDetail"/>  
+       <property name="cronExpression" value="0 0 0/1 * * ?"/><!-- 每隔1小时触发一次   -->
+	</bean>
+	<bean id="orderJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">   
+        <property name="targetObject" ref="orderJob"/>  
+        <property name="targetMethod" value="autoCloseOrder"/>  
+        <property name="concurrent" value="false"/>
+        <!-- 是否允许任务并发执行。当值为false时，表示必须等到前一个线程处理完毕后才再启一个新的线程   -->
+	</bean>  
+	<bean id="orderJob" class="com.design.web.batch.OrderJob"/>
+</beans>

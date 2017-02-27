@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.CartMapper">
+	<resultMap id="BaseResultMap" type="Cart">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="userNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="ProductNo" property="productNo" jdbcType="VARCHAR" />
+		<result column="PtstcID" property="ptscId" jdbcType="BIGINT" />
+		<result column="ProductNum" property="productNum" jdbcType="INTEGER" />
+	</resultMap>
+	
+	<resultMap id="CartInfoMap" type="CartInfo" extends="BaseResultMap">
+		<result column="ProductName" property="productName" jdbcType="VARCHAR" />
+		<result column="Picture" property="picture" jdbcType="BIGINT" />
+		<result column="Price" property="price" jdbcType="DECIMAL" />
+		<result column="PreSalePrice" property="preSalePrice" jdbcType="DECIMAL" />
+		<result column="ProductState" property="productState" jdbcType="INTEGER" />
+		<result column="IsEnable" property="isEnable" jdbcType="INTEGER" />
+		<result column="PreSellStartTime" property="preSellStartTime" jdbcType="TIMESTAMP" />
+		<result column="PreSellEndTime" property="preSellEndTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<select id="getAllProductsByUserNo" parameterType="string" resultMap="CartInfoMap">
+		SELECT a.ID,a.userNo,a.ProductNo,a.PtstcID,a.ProductNum,b.PreSellStartTime,b.PreSellEndTime,
+		b.ProductName,b.Price,IF(b.State=20,CAST(b.Price/2 AS DECIMAL(10,2)),NULL) AS PreSalePrice,b.State as ProductState,b.Picture,b.IsEnable
+		FROM dn_cart a
+		LEFT JOIN dn_product b ON a.ProductNo = b.ProductNo
+		where a.userNo = #{userNo,jdbcType=VARCHAR} AND b.IsEnable = 1 AND IF(b.State=10,1=1,b.PreSellEndTime >= NOW())
+	</select>
+	
+	<select id="getEnableProductsByUserNo" parameterType="string" resultMap="CartInfoMap">
+		SELECT a.ID,a.userNo,a.ProductNo,a.PtstcID,a.ProductNum,b.PreSellStartTime,b.PreSellEndTime,
+		b.ProductName,b.Price,IF(b.State=20,CAST(b.Price/2 AS DECIMAL(10,2)),NULL) AS PreSalePrice,b.State as ProductState,b.Picture
+		FROM dn_cart a
+		INNER JOIN dn_product b ON a.ProductNo = b.ProductNo AND b.IsEnable = 1
+		INNER JOIN dn_product_size_color c ON a.PtstcID = c.ID AND c.IsEnable = 1
+		WHERE a.userNo = #{userNo,jdbcType=VARCHAR}
+	</select>
+	
+	<insert id="insertProducttoCart" parameterType="Cart" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO dn_cart(userNo,ProductNo,PtstcID,ProductNum)
+		values(#{userNo,jdbcType=VARCHAR},#{productNo,jdbcType=VARCHAR},
+		#{ptscId,jdbcType=BIGINT},#{productNum,jdbcType=VARCHAR})
+	</insert>
+	
+	<select id="getCartById" parameterType="long" resultMap="BaseResultMap">
+		SELECT ID,userNo,ProductNo,PtstcID,ProductNum from dn_cart where id = #{id,jdbcType=BIGINT}
+	</select>
+		
+	<select id="getProductByCondition" parameterType="map" resultMap="BaseResultMap">
+		SELECT ID,userNo,ProductNo,PtstcID,ProductNum from dn_cart
+		where userNo = #{userNo,jdbcType=VARCHAR} and PtstcID = #{ptscId,jdbcType=BIGINT}
+	</select>
+	
+	<update id="updateProductNuminCart" parameterType="Cart">
+		UPDATE dn_cart
+		<set>
+			<if test="productNum!=null">
+				ProductNum = #{productNum,jdbcType=INTEGER}
+			</if>
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	
+	<delete id="removeProductfromCart">
+		DELETE from dn_cart where ID = #{id,jdbcType=BIGINT} and userNo = #{userNo,jdbcType=VARCHAR}
+	</delete>
+	
+	<delete id="batchRmProductsInCart">
+		DELETE from dn_cart where userNo = #{userNo,jdbcType=VARCHAR} and ID in 
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item,jdbcType=VARCHAR}
+		</foreach>
+	</delete>
+	
+	<resultMap id="NumAndMoneyMap" type="NumAndMoney">
+		<result column="Num" property="num" jdbcType="BIGINT" />
+		<result column="Money" property="money" jdbcType="DECIMAL" />
+	</resultMap>
+	
+	<select id="getCartSumNumAndMoney" parameterType="string" resultMap="NumAndMoneyMap">
+		SELECT SUM(a.ProductNum) as Num,SUM(a.ProductNum*b.Price) as Money FROM dn_cart a
+		INNER JOIN dn_product_size_color c ON a.PtstcID = c.ID AND c.IsEnable = 1 AND a.userNo = #{userNo,jdbcType=VARCHAR}
+		LEFT JOIN dn_product b ON a.ProductNo = b.ProductNo 
+	</select>
+	<select id="getCartCount" parameterType="string" resultType="int">
+		SELECT count(0) from dn_cart where userNo = #{userNo,jdbcType=VARCHAR}
+	</select>
+</mapper> 

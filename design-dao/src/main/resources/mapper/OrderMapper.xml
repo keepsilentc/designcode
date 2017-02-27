@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.OrderMapper">
+	<resultMap id="BaseResultMap" type="Order">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="userNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="OrderNo" property="orderNo" jdbcType="VARCHAR" />
+		<result column="PreOrderNo" property="preOrderNo" jdbcType="VARCHAR"/>
+		<result column="OrderType" property="orderType" jdbcType="INTEGER" />
+		<result column="payId" property="payId" jdbcType="VARCHAR" />
+		<result column="CurrencyID" property="currencyId" jdbcType="VARCHAR" />
+		<result column="OrderMoney" property="orderMoney" jdbcType="DECIMAL" />
+		<result column="Freight" property="freight" jdbcType="DECIMAL" />
+		<result column="CouponNo" property="couponNo" jdbcType="VARCHAR" />
+		<result column="DiscountMoney" property="discountMoney" jdbcType="DECIMAL" />
+		<result column="DeliverNo" property="deliverNo" jdbcType="VARCHAR" />
+		<result column="DeliverName" property="deliverName" jdbcType="VARCHAR" />
+		<result column="OrderState" property="orderState" jdbcType="INTEGER" />
+		<result column="address" property="address" jdbcType="VARCHAR" />
+		<result column="isShow" property="isShow" jdbcType="INTEGER" />
+		<result column="Remark" property="remark" jdbcType="VARCHAR" />
+		<result column="ModifyCount" property="modifyCount" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insertOrder" parameterType="Order">
+		INSERT INTO dn_order(userNo,OrderNo,PreOrderNo,OrderType,CurrencyID,
+			payId,OrderMoney,Freight,CouponNo,DiscountMoney,isShow,
+			OrderState,address,Remark,ModifyCount,createTime)
+		values(#{userNo,jdbcType=VARCHAR},#{orderNo,jdbcType=VARCHAR},#{preOrderNo,jdbcType=VARCHAR},#{orderType,jdbcType=INTEGER},#{currencyId,jdbcType=VARCHAR},
+			#{payId,jdbcType=VARCHAR},#{orderMoney,jdbcType=DECIMAL},#{freight,jdbcType=DECIMAL},#{couponNo,jdbcType=VARCHAR},#{discountMoney,jdbcType=DECIMAL},#{isShow,jdbcType=INTEGER},
+			#{orderState,jdbcType=INTEGER},#{address,jdbcType=VARCHAR},#{remark,jdbcType=VARCHAR},#{modifyCount,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<sql id="BaseField">
+		ID,userNo,OrderNo,PreOrderNo,isShow,OrderType,payId,CurrencyID,OrderMoney,Freight,CouponNo,DiscountMoney,
+		DeliverNo,DeliverName,OrderState,address,Remark,ModifyCount,CreateTime
+	</sql>
+	
+	<select id="getOrderList" parameterType="map" resultMap="BaseResultMap">
+		SELECT <include refid="BaseField"></include> from dn_order
+		<where>
+			userNo = #{userNo,jdbcType=VARCHAR} and isShow = 1
+			<if test="orderType!=null">
+				and OrderType = #{orderType,jdbcType=INTEGER}
+			</if>
+			<if test="orderState!=null and orderState.size()!=0">
+				and OrderState in
+				<foreach collection="orderState" open="(" separator="," close=")" item="item">
+					#{item,jdbcType=INTEGER}
+				</foreach>
+			</if>
+			<choose>
+				<when test="timeRange==1">
+					<![CDATA[
+							and CreateTime >= DATE_SUB(now(),INTERVAL 1 WEEK)
+						]]>
+				</when>
+				<when test="timeRange==2">
+					<![CDATA[
+							and CreateTime >= DATE_SUB(now(),INTERVAL 1 MONTH)
+						]]>
+				</when>
+				<when test="timeRange==3">
+					<![CDATA[
+							and CreateTime >= DATE_SUB(now(),INTERVAL 3 MONTH)
+						]]>
+				</when>
+			</choose>
+		</where>
+		order by CreateTime desc
+		LIMIT #{pageIndex,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+	</select>
+	
+	<select id="getRefundOrderList" parameterType="map" resultMap="BaseResultMap">
+		SELECT <include refid="BaseField"></include> from dn_order a
+		WHERE a.userNo = #{userNo,jdbcType=VARCHAR}
+		AND EXISTS(SELECT * FROM dn_refund b WHERE b.OrderNo = a.OrderNo)
+	</select>
+	
+	<select id="getOrderByOrderNo" resultMap="BaseResultMap">
+		SELECT <include refid="BaseField"></include> from dn_order
+		where OrderNo = #{orderNo,jdbcType=VARCHAR} 
+		<if test="userNo!=null">
+			and userNo = #{userNo,jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<select id="getCanCloseOrders" parameterType="int" resultMap="BaseResultMap">
+		SELECT <include refid="BaseField"></include> from dn_order
+		<![CDATA[
+			WHERE OrderState = 10 AND CreateTime <= DATE_SUB(NOW(), INTERVAL #{autoclosetime,jdbcType=INTEGER} HOUR)
+		]]>
+	</select>
+	
+	<update id="closeOrder" parameterType="Order">
+		UPDATE dn_order
+		<set>
+			ModifyCount = ModifyCount+1,
+			OrderState = #{orderState,jdbcType=INTEGER},
+			UpdateBy = #{updateBy,jdbcType=VARCHAR},
+			UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+		</set>
+		where ID = #{id,jdbcType=BIGINT} and OrderState !=40 and ModifyCount = #{modifyCount,jdbcType=INTEGER}
+	</update>
+	
+	<update id="updateOrderAtnofity" parameterType="Order">
+		UPDATE dn_order 
+		<set>
+				ModifyCount = ModifyCount+1,
+				isShow = #{isShow,jdbcType=INTEGER},
+				OrderState = #{orderState,jdbcType=INTEGER},
+				payId = #{payId,jdbcType=VARCHAR},
+			<if test="orderType!=null">
+				OrderType = #{orderType,jdbcType=INTEGER},
+			</if>
+			<if test="discountMoney!=null">
+				DiscountMoney = #{discountMoney,jdbcType=INTEGER},
+			</if>
+			<if test="orderMoney!=null">
+				OrderMoney = #{orderMoney,jdbcType=INTEGER},
+			</if>
+				UpdateBy = #{updateBy,jdbcType=VARCHAR},
+				UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+			where ID = #{id,jdbcType=BIGINT}
+		</set>
+	</update>
+	
+	<update id="updateConfirm" parameterType="Order">
+		UPDATE dn_order 
+		<set>
+			ModifyCount = ModifyCount+1,
+			OrderState = #{orderState,jdbcType=INTEGER},
+			<if test="updateBy!=null">
+				UpdateBy = #{updateBy,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime!=null">
+				UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT} and ModifyCount = #{modifyCount,jdbcType=INTEGER} and isShow = 1
+	</update>
+	
+	<update id="updateOrderCurrency" parameterType="Order">
+		UPDATE dn_order 
+		<set>
+			ModifyCount = ModifyCount+1,
+			<if test="currencyId!=null">
+				CurrencyID = #{currencyId,jdbcType=VARCHAR},
+			</if>
+			<if test="orderMoney!=null">
+				OrderMoney = #{orderMoney,jdbcType=INTEGER},
+			</if>
+			<if test="discountMoney!=null">
+				DiscountMoney = #{discountMoney,jdbcType=INTEGER},
+			</if>
+			<if test="freight!=null">
+				Freight = #{freight,jdbcType=INTEGER},
+			</if>
+			<if test="updateBy!=null">
+				UpdateBy = #{updateBy,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime!=null">
+				UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT} and ModifyCount = #{modifyCount,jdbcType=INTEGER}
+	</update>
+	
+	<select id="getSplitOrders" parameterType="string" resultMap="BaseResultMap">
+		SELECT <include refid="BaseField"></include> from dn_order
+		WHERE PreOrderNo = #{orderNo,jdbcType=VARCHAR}
+	</select>
+	
+</mapper> 

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.StatusMapper">
+	<resultMap id="BaseResultMap" type="Status">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="StatusTypeId" property="statusTypeId" jdbcType="BIGINT" />
+		<result column="ThemeID" property="themeId" jdbcType="BIGINT" />
+		<result column="StatusName" property="statusName" jdbcType="VARCHAR" />
+		<result column="Described" property="describe" jdbcType="VARCHAR" />
+		<result column="StatusDetailUrl" property="statusDetailUrl" jdbcType="BIGINT" />
+		<result column="Picture" property="picture" jdbcType="BIGINT" />
+		<result column="InsidePicture" property="insidePicture" jdbcType="BIGINT" />
+		<result column="PictureWidth" property="pictureWidth" jdbcType="INTEGER"/>
+		<result column="PictureHeight" property="pictureHeight" jdbcType="INTEGER"/>
+		<result column="IsEnable" property="isEnable" jdbcType="INTEGER" />
+		<result column="orderBy" property="orderBy" jdbcType="INTEGER" />
+		<result column="updateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<resultMap id="StatusInfoMap"  type="StatusInfo" extends="BaseResultMap">
+		<result column="countryId" property="countryId" jdbcType="VARCHAR" />
+		<result column="markCount" property="markCount" jdbcType="BIGINT" />
+		<result column="isMarked" property="isMarked" jdbcType="INTEGER" />
+		<result column="designerId" property="designerId" jdbcType="BIGINT" />
+		<result column="designerName" property="designerName" jdbcType="VARCHAR" />
+		<result column="designerAvatar" property="designerAvatar" jdbcType="VARCHAR" />
+		<result column="ThemeName" property="themeName" jdbcType="VARCHAR" />
+		<result column="CanBuy" property="canBuy" jdbcType="INTEGER" />
+	</resultMap>
+	
+	<select id="getStatusList" parameterType="map" resultMap="StatusInfoMap">
+		SELECT a.ID,a.ThemeID,a.Picture,a.StatusName,praiseCount(a.id) as markCount,a.Described as 'describe',a.PictureWidth,a.PictureHeight,b.CanBuy,c.ThemeName,
+			 CASE WHEN f.StatusID IS NULL THEN 0 ELSE 1 END as isMarked ,d.CountryID as countryId,d.ID as designerId,d.DesignerName,d.photo as designerAvatar
+		FROM dn_status a 
+		LEFT JOIN dn_statustype b on a.StatusTypeId = b.ID 
+		LEFT JOIN dn_theme c ON a.ThemeID = c.id 
+		LEFT JOIN dn_designer d ON c.DesignerId = d.ID 
+		LEFT JOIN dn_user_status f ON a.id = f.StatusID AND f.UserNo = #{userNo,jdbcType=VARCHAR}
+		where a.isEnable = 1
+		order by a.orderBy desc
+		LIMIT #{pageIndex,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+	</select>
+	
+	<resultMap id="StatusDetailMap" type="StatusDetailInfo" extends="StatusInfoMap">
+		<result column="canBuy" property="canBuy" jdbcType="INTEGER" />
+		<result column="designerDescribe" property="designerDescribe" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<select id="getStatusDetailInfoById" resultMap="StatusDetailMap">
+		SELECT a.ID,a.ThemeID,a.InsidePicture,a.StatusDetailUrl,a.isEnable,a.StatusName,praiseCount(a.id) AS markCount,a.id AS statusId,
+			b.ThemeName,c.CountryID AS countryId,c.ID as designerId,c.DesignerName,c.photo AS designerAvatar,c.Described AS designerDescribe,CASE WHEN d.StatusID IS NULL THEN 0 ELSE 1 END AS isMarked,f.CanBuy
+		FROM dn_status a 
+		LEFT JOIN dn_theme b ON a.ThemeID = b.id 
+		LEFT JOIN dn_designer c ON b.DesignerId = c.ID
+		LEFT JOIN dn_user_status d ON a.id = d.StatusID AND d.UserNo = #{userNo,jdbcType=VARCHAR}
+		LEFT JOIN dn_statustype f ON a.StatusTypeId = f.ID
+		WHERE a.ID = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="getAllStatus" parameterType="long" resultType="map">
+		SELECT a.ID,a.Picture,a.StatusName FROM dn_status a
+		INNER JOIN dn_theme b ON a.ThemeID = b.ID AND a.IsEnable = 1 AND b.DesignerId = #{designerId,jdbcType=BIGINT}
+	</select>
+	
+	<select id="getMarkStatus" parameterType="string" resultMap="StatusInfoMap">
+		SELECT b.ID,b.StatusName,b.Picture FROM dn_user_status a 
+		INNER JOIN dn_status b ON a.StatusID = b.ID AND a.isPraise = 1 and a.UserNo = #{userNo,jdbcType=VARCHAR}
+	</select>
+	
+</mapper> 

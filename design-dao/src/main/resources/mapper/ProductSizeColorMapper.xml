@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.ProductSizeColorMapper">
+	<resultMap id="BaseResultMap" type="ProductSizeColor">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="ProductNo" property="productNo" jdbcType="VARCHAR" />
+		<result column="SizeID" property="sizeId" jdbcType="BIGINT" />
+		<result column="ColorID" property="colorId" jdbcType="BIGINT" />
+		<result column="Picture" property="picture" jdbcType="BIGINT" />
+		<result column="Inventory" property="inventory" jdbcType="INTEGER" />
+		<result column="Sale" property="sale" jdbcType="INTEGER" />
+		<result column="IsEnable" property="isEnable" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<resultMap id="ProductSizeColorInfoMap" type="ProductSizeColorInfo" extends="BaseResultMap">
+		<result column="SizeName" property="sizeName" jdbcType="VARCHAR" />
+		<result column="ColorName" property="colorName" jdbcType="VARCHAR" />
+		<result column="ColorPicture" property="colorPicture" jdbcType="BIGINT" />
+		<result column="ProductName" property="productName" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	
+	<select id="getEnableProductColorSizeList" parameterType="string" resultMap="ProductSizeColorInfoMap">
+		SELECT a.ID,a.ProductNo,a.SizeID,a.ColorID,a.Picture,a.Inventory,a.Sale,a.isEnable,a.CreateTime,b.SizeName,c.name as ColorName,c.Picture as ColorPicture
+		from dn_product_size_color a LEFT JOIN dn_size b ON a.SizeID = b.id LEFT JOIN dn_color c ON a.ColorID = c.id
+		where a.ProductNo = #{productNo,jdbcType=VARCHAR} and a.isEnable = 1 order by b.SizeCountryID,b.OrderBy
+	</select>
+	
+	<select id="getProductColorSizeByCondition" parameterType="map" resultMap="ProductSizeColorInfoMap">
+		SELECT a.ID,a.ProductNo,a.SizeID,a.ColorID,a.Picture,a.Inventory,a.Sale,a.IsEnable,a.CreateTime,b.SizeName,c.name as colorName
+		from dn_product_size_color a LEFT JOIN dn_size b ON a.SizeID = b.id LEFT JOIN dn_color c ON a.ColorID = c.id
+		where a.ProductNo = #{productNo,jdbcType=VARCHAR} and a.SizeID = #{sizeId,jdbcType=BIGINT} and a.ColorID = #{colorId,jdbcType=BIGINT}
+	</select>
+	
+	<select id="getProductColorSizeById" parameterType="long" resultMap="ProductSizeColorInfoMap">
+		SELECT a.ID,a.ProductNo,a.SizeID,a.ColorID,IFNULL(a.Picture,d.Picture) as Picture,a.Inventory,a.Sale,a.IsEnable,a.CreateTime,b.SizeName,c.Picture as ColorPicture,c.name AS colorName,d.ProductName
+		FROM dn_product_size_color a LEFT JOIN dn_size b ON a.SizeID = b.id LEFT JOIN dn_color c ON a.ColorID = c.id 
+		LEFT JOIN dn_product d ON a.ProductNo = d.ProductNo
+		WHERE a.ID = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<update id="updateProductNumInStock">
+		
+			UPDATE dn_product_size_color 
+			<set>
+				<choose>
+					<when test="operation==1">
+						Inventory = Inventory - #{productNum,jdbcType=INTEGER},
+						Sale = Sale + #{productNum,jdbcType=INTEGER},
+						UpdateTime = now()
+					</when>
+					<otherwise>
+						Inventory = Inventory + #{productNum,jdbcType=INTEGER},
+						Sale = Sale - #{productNum,jdbcType=INTEGER},
+						UpdateTime = now()
+					</otherwise>
+				</choose>
+			</set>
+			<where>
+				<choose>
+					<when test="operation==1">
+						<![CDATA[
+							Inventory >= #{productNum,jdbcType=INTEGER} and ID = #{id,jdbcType=BIGINT}
+						]]>
+					</when>
+					<otherwise>
+						<![CDATA[
+							Sale >= #{productNum,jdbcType=INTEGER} and ID = #{id,jdbcType=BIGINT}
+						]]>
+					</otherwise>
+				</choose>
+			</where>
+		
+	</update>
+	
+</mapper> 

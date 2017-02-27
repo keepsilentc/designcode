@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.ReturnLogMapper">
+	<resultMap id="BaseResultMap" type="ReturnLog">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="TraceLogId" property="traceLogId" jdbcType="VARCHAR" />
+		<result column="OrderNo" property="orderNo" jdbcType="VARCHAR" />
+		<result column="OrderDetailId" property="orderDetailId" jdbcType="BIGINT" />
+		<result column="ReturnNo" property="returnNo" jdbcType="VARCHAR" />
+		<result column="ReturnNum" property="returnNum" jdbcType="INTEGER" />
+		<result column="ReturnType" property="returnType" jdbcType="INTEGER" />
+		<result column="ReturnState" property="returnState" jdbcType="INTEGER" />
+		<result column="RecordType" property="recordType" jdbcType="INTEGER" />
+		<result column="Reason" property="reason" jdbcType="VARCHAR" />
+		<result column="Pictures" property="pictures" jdbcType="VARCHAR" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="ReturnLog" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO dn_return_log(TraceLogId,OrderNo,OrderDetailId,ReturnNo,RecordType,Reason,Pictures,ReturnNum,ReturnType,ReturnState,CreateTime)
+		values(#{traceLogId,jdbcType=VARCHAR},#{orderNo,jdbcType=VARCHAR},#{orderDetailId,jdbcType=BIGINT},
+				#{returnNo,jdbcType=VARCHAR},#{recordType,jdbcType=INTEGER},#{reason,jdbcType=VARCHAR},#{pictures,jdbcType=VARCHAR},
+				#{returnNum,jdbcType=INTEGER},#{returnType,jdbcType=INTEGER},#{returnState,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<update id="update" parameterType="ReturnLog">
+		UPDATE dn_return_log 
+		<set>
+				ReturnState = #{returnState,jdbcType=INTEGER},
+			<if test="reason!=null">
+				Reason = #{reason,jdbcType=VARCHAR},
+			</if>
+			<if test="updateBy!=null">
+				UpdateBy = #{updateBy,jdbcType=VARCHAR},
+			</if>
+			UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+</mapper> 

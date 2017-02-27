@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.DesignerMapper">
+	<resultMap id="BaseResultMap" type="Designer">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="CountryID" property="countryId" jdbcType="VARCHAR" />
+		<result column="DesignerName" property="designerName" jdbcType="VARCHAR" />
+		<result column="BrandID" property="brandId" jdbcType="VARCHAR" />
+		<result column="Photo" property="photo" jdbcType="BIGINT" />
+		<result column="Described" property="describe" jdbcType="VARCHAR" />
+		<result column="Remark" property="remark" jdbcType="VARCHAR" />
+		<result column="IsEnable" property="isEnable" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<resultMap  id="DesignersInfoMap" type="DesignerInfo" extends="BaseResultMap">
+		<result column="BrandName" property="brandName" jdbcType="VARCHAR" />
+		<result column="isFollow" property="isFollow" jdbcType="INTEGER" />
+	</resultMap>
+	
+	<select id="getDesignersByCondition" parameterType="map" resultMap="DesignersInfoMap">
+		SELECT a.ID,a.CountryID,a.DesignerName,a.BrandID,a.Photo,b.BrandName 
+		FROM DN_Designer a 
+		LEFT JOIN dn_brand b ON a.BrandID = b.ID
+		LEFT JOIN dn_country c ON a.CountryID = c.ID
+		<where>
+				a.IsEnable = 1
+			<if test="countryId!=null">
+				and	a.CountryID = #{countryId,jdbcType=VARCHAR}
+			</if>
+			<if test="brandId!=null">
+				and a.BrandID = #{brandId,jdbcType=VARCHAR}
+			</if>
+			<if test="designerName!=null">
+				and a.DesignerName like CONCAT('%',#{designerName,jdbcType=VARCHAR},'%')  
+			</if>
+		</where>
+		order by a.DesignerName
+	</select>
+	
+	<select id="getDesignersByUserNo" parameterType="string" resultMap="DesignersInfoMap">
+		SELECT a.ID,a.CountryID,a.DesignerName,a.BrandID,a.Photo,b.BrandName,CASE WHEN d.isInterest = 1 THEN 1 ELSE 0 END as isFollow 
+		FROM DN_Designer a 
+		LEFT JOIN dn_brand b ON a.BrandID = b.ID
+		LEFT JOIN dn_country c ON a.CountryID = c.ID
+		LEFT JOIN dn_user_designer d ON d.UserNo = #{userNo,jdbcType=VARCHAR} AND d.DesignerId = a.ID
+		<where>
+				a.IsEnable = 1
+		</where>
+		order by a.DesignerName
+	</select>
+	
+	<select id="getDesignerDetailInfoById" resultMap="DesignersInfoMap">
+		SELECT a.ID,a.CountryID,a.DesignerName,a.BrandID,a.Photo,a.Described,b.BrandName,CASE WHEN d.isInterest = 1 THEN 1 ELSE 0 END as isFollow 
+		FROM DN_Designer a 
+		LEFT JOIN dn_brand b ON a.BrandID = b.ID
+		LEFT JOIN dn_country c ON a.CountryID = c.ID
+		LEFT JOIN dn_user_designer d ON d.UserNo = #{userNo,jdbcType=VARCHAR} AND d.DesignerId = a.ID
+		where a.ID = #{id,jdbcType=BIGINT}
+	</select>
+
+	<resultMap id="MarkDesignerInfoMap" type="MarkDesignerInfo" extends="BaseResultMap">
+		<result column="ProductPicture" property="picture" jdbcType="BIGINT" />
+		<result column="ProductNo" property="productNo"  jdbcType="VARCHAR" />
+	</resultMap>
+
+	<select id="getMarkDesigners" parameterType="string" resultMap="MarkDesignerInfoMap">
+		SELECT a.DesignerId as ID,b.CountryID,b.DesignerName,b.Photo ,b.Described,d.Picture as ProductPicture,d.ProductNo  
+		FROM dn_user_designer a LEFT JOIN dn_designer b ON a.DesignerId = b.ID 
+		LEFT JOIN (SELECT DesignerId,SUBSTRING_INDEX(GROUP_CONCAT(ProductNo),',',2) AS products FROM dn_product WHERE IsRepresentative = 1 GROUP BY DesignerId ) c ON a.DesignerId = c.DesignerId 
+		LEFT JOIN dn_product d ON a.DesignerId = d.DesignerId AND FIND_IN_SET(d.`ProductNo`,c.products)
+		WHERE a.isInterest = 1 AND a.UserNo = #{userNo,jdbcType=VARCHAR}
+	</select>
+</mapper> 

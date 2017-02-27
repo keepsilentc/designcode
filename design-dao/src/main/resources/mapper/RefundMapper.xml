@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.RefundMapper">
+	<resultMap id="BaseResultMap" type="Refund">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="RefundNo" property="refundNo" jdbcType="VARCHAR" />
+		<result column="UserNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="OrderNo" property="orderNo" jdbcType="VARCHAR" />
+		<result column="OrderDetailId" property="orderDetailId" jdbcType="BIGINT" />
+		<result column="RefundNum" property="refundNum" jdbcType="INTEGER" />
+		<result column="RefundMondy" property="refundMoney" jdbcType="DECIMAL" />
+		<result column="CurrencyID" property="currencyId" jdbcType="VARCHAR" />
+		<result column="PayTypeId" property="payTypeId" jdbcType="VARCHAR" />
+		<result column="RefundType" property="refundType" jdbcType="INTEGER" />
+		<result column="RefundState" property="refundState" jdbcType="INTEGER" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<sql id="BaseField">
+		ID,RefundNo,UserNo,OrderNo,OrderDetailId,RefundNum,RefundMondy,PayTypeId,CurrencyID,RefundType,RefundState,CreateTime
+	</sql>
+	
+	<insert id="insert" parameterType="Refund" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO DN_Refund(RefundNo,UserNo,OrderNo,OrderDetailId,RefundNum,RefundMondy,PayTypeId,CurrencyID,RefundType,RefundState,CreateTime)
+		values(#{refundNo,jdbcType=VARCHAR},#{userNo,jdbcType=VARCHAR},#{orderNo,jdbcType=VARCHAR},#{orderDetailId,jdbcType=BIGINT},#{refundNum,jdbcType=INTEGER},
+			#{refundMoney,jdbcType=DECIMAL},#{payTypeId,jdbcType=VARCHAR},#{currencyId,jdbcType=VARCHAR},#{refundType,jdbcType=INTEGER},#{refundState,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<update id="update" parameterType="Refund">
+		UPDATE DN_Refund
+		<set>
+				RefundState = #{refundState,jdbcType=VARCHAR},
+				UpdateBy = #{updateBy,jdbcType=VARCHAR},
+				UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+	<select id="getRefundList" parameterType="map" resultMap="BaseResultMap">
+		SELECT <include refid="BaseField"></include> from DN_Refund
+		<where>
+			<if test="orderNo!=null">
+				OrderNo = #{orderNo,jdbcType=VARCHAR}
+			</if>
+			<if test="orderDetailId!=null">
+				and OrderDetailId = #{orderDetailId,jdbcType=BIGINT} 
+			</if>
+			<if test="refundType!=null">
+				and RefundType = #{refundType,jdbcType=INTEGER}
+			</if>
+			<if test="refundState!=null">
+				and RefundState = #{refundState,jdbcType=INTEGER}
+			</if>
+		</where>
+		order by CreateTime desc
+	</select>
+	
+	<select id="getRefundByRefundNo" parameterType="string" resultMap="BaseResultMap">
+		SELECT <include refid="BaseField"></include> from DN_Refund where RefundNo = #{refundNo,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getRefundProductNum" parameterType="string" resultType="int">
+		SELECT SUM(RefundNum) FROM dn_refund WHERE RefundState = 20 AND OrderNo = #{orderNo,jdbcType=VARCHAR}
+	</select>
+	
+	
+</mapper> 

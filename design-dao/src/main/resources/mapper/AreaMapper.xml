@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.AreaMapper">
+	<resultMap id="CountryResultMap" type="Country">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="CountryName" property="countryName" jdbcType="VARCHAR" />
+		<result column="OrderBy" property="order" jdbcType="INTEGER" />
+	</resultMap>
+	<resultMap id="ProvinceResultMap" type="Province">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="pname" property="provinceName" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="CityResultMap" type="City">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="ProvinceID" property="provinceId" jdbcType="BIGINT" />
+		<result column="CityName" property="cityName" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="RegionResultMap" type="Region">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="CityID" property="cityId" jdbcType="BIGINT" />
+		<result column="RegionName" property="regionName" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<select id="queryAllCountrys" resultMap="CountryResultMap">
+		SELECT ID,CountryName from dn_country order by OrderBy
+	</select>
+	
+	<resultMap id="pcrsResultMap" type="PcrInfo">
+		<result column="pid" property="provinceId" jdbcType="VARCHAR" />
+		<result column="pname" property="province" jdbcType="VARCHAR" />
+		<result column="cid" property="cityId" jdbcType="VARCHAR" />
+		<result column="CityName" property="city" jdbcType="VARCHAR" />
+		<result column="rid" property="regionId" jdbcType="VARCHAR" />
+		<result column="regionName" property="region" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="queryAllPcr" resultMap="pcrsResultMap">
+		SELECT a.id as pid,a.pname,b.id as cid,b.CityName,c.id as rid,c.regionName from dn_province a,dn_city b,dn_region c 
+		WHERE a.id = b.provinceid AND b.id = c.cityid
+		ORDER BY a.id,b.id,c.id 
+	</select>
+	
+	<select id="queryAllProvince" resultMap="ProvinceResultMap">
+		SELECT id,pname from dn_province
+	</select>
+	
+	<select id="queryAllCitysByProvinceId" parameterType="long" resultMap="CityResultMap">
+		SELECT id,cityName,ProvinceID from dn_city where ProvinceId = #{provinceId,jdbcType=BIGINT}
+	</select>
+		
+	<select id="queryAllRegionsByCityId" parameterType="long" resultMap="RegionResultMap">
+		SELECT ID,CityID,RegionName from dn_region where CityId = #{cityId,jdbcType=BIGINT}
+	</select>
+	
+</mapper> 

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.SubscribeMailMapper">
+	<resultMap id="BaseResultMap" type="SubscribeMail">
+		<id column="userNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="IsSubscribe" property="isSubscribe" jdbcType="INTEGER" />
+		<result column="SubscribeMail" property="subScribeMail" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="SubscribeMail">
+		INSERT INTO DN_SubscribeMail(userNo,IsSubscribe,SubscribeMail,CreateTime)
+		values(#{userNo,jdbcType=VARCHAR},#{isSubscribe,jdbcType=INTEGER},#{subScribeMail,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<select id="getSubscribeInfo" parameterType="string" resultMap="BaseResultMap">
+		SELECT userNo,IsSubscribe,SubscribeMail,CreateTime from DN_SubscribeMail where userNo = #{userNo,jdbcType=VARCHAR}
+	</select>
+	
+	<update id="update" parameterType="SubscribeMail">
+		UPDATE DN_SubscribeMail
+		<set>
+			SubscribeMail = #{subScribeMail,jdbcType=VARCHAR},
+			IsSubscribe = #{isSubscribe,jdbcType=INTEGER},
+			UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+		</set>
+		where userNo = #{userNo,jdbcType=VARCHAR}
+	</update>
+	
+</mapper> 

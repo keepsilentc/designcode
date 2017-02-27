@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.CouponMapper">
+	<resultMap id="BaseResultMap" type="Coupon">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="CouponNo" property="couponNo" jdbcType="VARCHAR" />
+		<result column="CouponName" property="couponName" jdbcType="VARCHAR" />
+		<result column="CouponStrategy" property="couponStrategy" jdbcType="INTEGER" />
+		<result column="CouponType" property="couponType" jdbcType="INTEGER" />
+		<result column="StartTime" property="startTime" jdbcType="TIMESTAMP" />
+		<result column="EndTime" property="endTime" jdbcType="TIMESTAMP" />
+		<result column="SumNum" property="sumNum" jdbcType="INTEGER" />
+		<result column="CouponRate" property="couponRate" jdbcType="DECIMAL" />
+		<result column="FullMoney" property="fullMoney" jdbcType="DECIMAL" />
+		<result column="MinusMoney" property="minusMoney" jdbcType="DECIMAL" />
+		<result column="IsEnable" property="isEnable" jdbcType="INTEGER" />
+		<result column="Remark" property="remark" jdbcType="VARCHAR" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<select id="getCoupon" resultMap="BaseResultMap">
+		SELECT ID,CouponNo,CouponName,CouponStrategy,CouponType,StartTime,EndTime,SumNum,CouponRate,FullMoney,MinusMoney,IsEnable,Remark,CreateTime
+		from dn_coupon
+		where CouponNo = #{couponNo,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getCouponListByUserNo" resultMap="BaseResultMap">
+		SELECT a.ID,a.CouponNo,a.CouponName,a.CouponStrategy,a.CouponType,a.StartTime,a.EndTime,a.SumNum,a.CouponRate,a.FullMoney,a.MinusMoney,a.IsEnable,a.Remark,a.CreateTime
+		FROM dn_coupon a INNER JOIN dn_user_coupon b 
+		ON a.CouponNo = b.CouponNo AND a.IsEnable = 1 AND b.IsEnable = 1 And b.userNo = #{userNo,jdbcType=VARCHAR}
+		<where>
+			<choose>
+			<when test="validFlag='1'">
+				<![CDATA[
+							b.UserCouponState = 10 AND a.EndTime >= now() AND a.StartTime <= now()
+						]]>
+				 
+			</when>
+			<when test="validFlag='0'">
+				<![CDATA[
+							b.UserCouponState = 10 AND a.EndTime < now() 
+						]]>
+			</when>
+			<otherwise>
+				1=0
+			</otherwise>
+		</choose>
+		</where>
+		order by b.ReceiveTime desc
+	</select>
+	
+	<resultMap id="CouponInfoMap" type="CouponInfo">
+		<result column="remainQuantity" property="remainQuantity" jdbcType="INTEGER" />
+	</resultMap>
+	
+	<select id="getCouponListByCouponName" parameterType="string" resultMap="CouponInfoMap">
+		SELECT ID,CouponNo,CouponName,CouponStrategy,CouponType,StartTime,EndTime,SumNum,SumNum - getCouponReceivedQuantity(CouponNo) as remainQuantity,CouponRate,FullMoney,MinusMoney,IsEnable,Remark,CreateTime
+		from dn_coupon
+		where CouponName = #{couponName,jdbcType=VARCHAR}
+	</select>
+	
+</mapper> 

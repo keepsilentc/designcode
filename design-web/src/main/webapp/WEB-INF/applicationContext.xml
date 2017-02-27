@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+	http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+	<!-- 使用cglib动态代理  -->
+	<aop:aspectj-autoproxy proxy-target-class="true"/>
+	<!-- 支持获取当前proxy --> 
+	<aop:aspectj-autoproxy expose-proxy="true"/>
+	
+	<context:component-scan base-package="com.design">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+	
+	<bean id="userFacade" class="com.design.service.impl.user.UserFacade">
+		<property name="userServices">
+			<map>
+				<entry key="default"><ref bean="defaultUserServiceImpl" /></entry>
+				<entry key="platform"><ref bean="platFormUserServiceImpl" /></entry>
+				<entry key="email"><ref bean="emailUserServiceImpl" /></entry>
+				<entry key="mobile"><ref bean="mobileUserServiceImpl" /></entry>
+			</map>
+		</property>
+	</bean>
+	
+	<bean id="payFacadeImpl" class="com.design.service.impl.pay.PayFacade">
+		<property name="thirdTradeServices">
+			<map>
+				<entry key="ALIPAY"><ref bean="aliPayServiceImpl" /></entry>
+				<entry key="WECHAT"><ref bean="weiXinPayServiceImpl" /></entry>
+				<entry key="PAYPAL"><ref bean="payPalServiceImpl" /></entry>
+				<entry key="default"><ref bean="commonPayServiceImpl" /></entry>
+			</map>
+		</property>
+	</bean>
+	
+	<bean id="spotRefundDetailServiceImpl" class="com.design.service.impl.refund.SpotRefundDetailServiceImpl">
+		<property name="thridTradeServices">
+			<map>
+				<entry key="ALIPAY"><ref bean="aliPayServiceImpl" /></entry>
+				<entry key="WECHAT"><ref bean="weiXinPayServiceImpl" /></entry>
+				<entry key="PAYPAL"><ref bean="payPalServiceImpl" /></entry>
+			</map>
+		</property>
+	</bean>
+	
+	<bean id="preSellRefundDetailServiceImpl" class="com.design.service.impl.refund.PreSellRefundDetailServiceImpl">
+		<property name="thridTradeServices">
+			<map>
+				<entry key="ALIPAY"><ref bean="aliPayServiceImpl" /></entry>
+				<entry key="WECHAT"><ref bean="weiXinPayServiceImpl" /></entry>
+				<entry key="PAYPAL"><ref bean="payPalServiceImpl" /></entry>
+			</map>
+		</property>
+	</bean>
+	
+	<bean id="refundDetailServices" class="com.design.service.impl.refund.RefundServiceImpl">
+		<property name="refundDetailServices">
+			<map>
+				<entry key="SPOT"><ref bean="spotRefundDetailServiceImpl" /></entry>
+				<entry key="PRE_SELL"><ref bean="preSellRefundDetailServiceImpl" /></entry>
+			</map>
+		</property>
+	</bean>
+	
+	<bean id="couponServiceImpl" class="com.design.service.impl.discount.CouponServiceImpl">
+		<property name="couponStrategyServices">
+			<map>
+				<entry key="DISCOUNT"><ref bean="discountServiceImpl" /></entry>
+				<entry key="FULLMINUS"><ref bean="fullMoneyMinusServiceImpl" /></entry>
+			</map>
+		</property>
+		
+	</bean>
+	
+	<import resource="classpath:applicationContext-db.xml" />
+	<import resource="classpath:applicationContext-quartz.xml" />
+</beans>

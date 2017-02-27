@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.FeedBackMapper">
+	<resultMap id="BaseResultMap" type="FeedBack">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="userNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="FeedBackName" property="feedBackName" jdbcType="VARCHAR" />
+		<result column="Described" property="described" jdbcType="VARCHAR" />
+		<result column="IsRead" property="isRead" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="FeedBack">
+		INSERT INTO dn_feedback(userNo,FeedBackName,Described,IsRead,CreateTime)
+		values(#{userNo,jdbcType=VARCHAR},#{feedBackName,jdbcType=VARCHAR},#{described,jdbcType=VARCHAR},#{isRead,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+</mapper> 

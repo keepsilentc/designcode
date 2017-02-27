@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.WishMapper">
+	<resultMap id="BaseResultMap" type="Wish">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="userNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="ProductNo" property="productNo" jdbcType="VARCHAR" />
+		<result column="PtstcID" property="ptscId" jdbcType="BIGINT" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<resultMap id="WishInfoResultMap" type="WishInfo" extends="BaseResultMap">
+		<result column="Picture" property="picture" jdbcType="BIGINT" />
+		<result column="ProductName" property="productName" jdbcType="VARCHAR" />
+		<result column="Price" property="price" jdbcType="DECIMAL" />
+		<result column="countryId" property="countryId" jdbcType="VARCHAR" />
+		<result column="Inventory" property="inventory" jdbcType="INTEGER" />
+		<result column="isEnable" property="isEnable" jdbcType="INTEGER" />
+		<result column="SizeName" property="sizeName" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<select id="getWishInfoList" parameterType="map" resultMap="WishInfoResultMap">
+		SELECT a.id,a.PtstcID,a.ProductNo,IFNULL(c.Picture,b.Picture) as Picture,b.Price,b.ProductName,c.Inventory,b.IsEnable*c.IsEnable as IsEnable,d.countryId,f.SizeName
+		FROM dn_wish a 
+		LEFT JOIN dn_product b ON a.ProductNo = b.ProductNo 
+		LEFT JOIN dn_product_size_color c ON a.PtstcID = c.ID
+		LEFT JOIN dn_size f ON c.SizeID = f.ID
+		LEFT JOIN designer_theme_country_brand_view d ON b.ThemeID = d.themeId
+		<where>
+			a.userNo = #{userNo,jdbcType=VARCHAR}
+		</where>
+		order by a.CreateTime desc
+		limit #{pageIndex,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+	</select>
+	
+	<insert id="insert" parameterType="Wish">
+		INSERT INTO dn_wish(userNo,ProductNo,PtstcID,CreateTime)
+		values(#{userNo,jdbcType=VARCHAR},#{productNo,jdbcType=VARCHAR},#{ptscId,jdbcType=BIGINT},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<select id="getWishByCondition" parameterType="map" resultMap="BaseResultMap">
+		SELECT ID,userNo,ProductNo,PtstcID,CreateTime from dn_wish
+		where userNo = #{userNo,jdbcType=VARCHAR} and ProductNo = #{productNo,jdbcType=VARCHAR} and PtstcID = #{ptscId,jdbcType=BIGINT}
+	</select>
+	
+	<delete id="delete">
+		DELETE from dn_wish where userNo = #{userNo,jdbcType=VARCHAR} and ID = #{id,jdbcType=BIGINT}
+	</delete>
+</mapper> 

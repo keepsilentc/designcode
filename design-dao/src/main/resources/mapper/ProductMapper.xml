@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.ProductMapper">
+	<resultMap id="BaseResultMap" type="Product">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="ThemeID" property="themeId" jdbcType="BIGINT" />
+		<result column="CategoryID" property="cateGoryId" jdbcType="BIGINT" />
+		<result column="DesignerId" property="designerId" jdbcType="BIGINT" />
+		<result column="BrandID" property="brandId" jdbcType="VARCHAR" />
+		<result column="ProductNo" property="productNo" jdbcType="VARCHAR" />
+		<result column="OriginPrice" property="originPrice" jdbcType="DECIMAL" />
+		<result column="Price" property="price" jdbcType="DECIMAL" />
+		<result column="Picture" property="picture" jdbcType="BIGINT" />
+		<result column="State" property="state" jdbcType="INTEGER" />
+		<result column="PreSellStartTime" property="preSellStartTime" jdbcType="TIMESTAMP" />
+		<result column="PreSellEndTime" property="preSellEndTime" jdbcType="TIMESTAMP" />
+		<result column="IsNew" property="isNew" jdbcType="INTEGER" />
+		<result column="IsRepresentative" property="isRepresentative" jdbcType="INTEGER" />
+		<result column="Remark" property="remark" jdbcType="VARCHAR" />
+		<result column="ProductName" property="productName" jdbcType="VARCHAR" />
+		<result column="IsEnable" property="isEnable" jdbcType="INTEGER" />
+		<result column="ProductDescribed" property="productDescribe" jdbcType="VARCHAR" />
+		<result column="ProductDetail" property="productDetail" jdbcType="VARCHAR" />
+		<result column="SizeDescribed" property="sizeDescribe" jdbcType="VARCHAR" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<resultMap id="ProductInfoMap" type="ProductInfo" extends="BaseResultMap">
+		<result column="ThemeName" property="themeName" jdbcType="VARCHAR" />
+		<result column="CountryId" property="countryId" jdbcType="VARCHAR" />
+		<result column="CategoryName" property="categoryName" jdbcType="VARCHAR" />
+		<result column="BrandName" property="brandName" jdbcType="VARCHAR" />
+		<result column="DesignerName" property="designerName" jdbcType="VARCHAR" />
+		<result column="CountryID" property="countryId" jdbcType="VARCHAR" />
+		<result column="PreSalePrice" property="preSalePrice" jdbcType="DECIMAL" />
+		<result column="inventory" property="inventory" jdbcType="INTEGER" />
+	</resultMap>
+	
+	<select id="getProductList" parameterType="map" resultMap="ProductInfoMap">
+		SELECT b.DesignerName,b.CountryId,a.designerId,a.ProductNo,a.Picture,a.OriginPrice,a.Price,
+		a.State,a.IsNew,a.ProductName,a.PreSellStartTime,a.PreSellEndTime,getProductInventory(a.ProductNo) as inventory
+		from DN_Product a 
+		LEFT JOIN designer_theme_country_brand_view b on a.ThemeID = b.themeId and a.DesignerId = b.designerId and a.BrandID = b.brandId
+		<where>
+				a.isEnable = 1 AND IF(a.State=10,1=1,a.PreSellEndTime >= NOW())
+			<if test="designerId!=null">
+				and a.DesignerId = #{designerId,jdbcType=BIGINT}
+			</if>
+			<if test="themeId!=null">
+				and a.ThemeID = #{themeId,jdbcType=BIGINT}
+			</if>
+			<if test="categoryId!=null">
+				and FIND_IN_SET(a.CategoryID,queryCateGorys(#{categoryId,jdbcType=BIGINT}))
+			</if>
+			<if test="isNew!=null">
+				and a.IsNew = #{isNew,jdbcType=INTEGER}
+			</if>
+			<if test="state!=null">
+				and a.State = #{state,jdbcType=INTEGER}
+			</if>
+		</where>
+		<choose>
+			<when test="sortRule==1">
+				order by a.CreateTime desc
+			</when>
+			<when test="sortRule==2">
+				order by a.Price desc
+			</when>
+			<when test="sortRule==3">
+				order by a.Price
+			</when>
+			<otherwise>
+				order by a.CreateTime desc
+			</otherwise>
+		</choose>
+		LIMIT #{pageIndex,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+	</select>
+	
+	<select id="getProductByProductNo" parameterType="string" resultMap="ProductInfoMap">
+		SELECT a.ID,a.ThemeID,a.CategoryID,a.DesignerId,b.DesignerName,b.CountryName,a.BrandID,a.ProductNo,a.Price,a.OriginPrice,IF(a.State=20,CAST(a.Price/2 AS DECIMAL(10,2)),NULL) as PreSalePrice,
+		a.Picture,a.State,a.IsNew,a.IsRepresentative,a.Remark,a.ProductName,a.IsEnable,a.ProductDescribed,
+		a.ProductDetail,a.SizeDescribed,a.CreateTime,a.PreSellStartTime,a.PreSellEndTime 
+		from dn_product a
+		LEFT JOIN designer_theme_country_brand_view b on a.ThemeID = b.themeId and a.DesignerId = b.designerId and a.BrandID = b.brandId
+		where ProductNo = #{productNo,jdbcType=VARCHAR} 
+	</select>
+	
+	<select id="getAllProducts" parameterType="long" resultType="map">
+		SELECT ProductNo,Picture FROM dn_product WHERE DesignerId = #{designerId,jdbcType=BIGINT} AND IsEnable = 1
+	</select>
+</mapper> 

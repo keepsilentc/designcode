@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.ProductDetailMapper">
+	<resultMap id="BaseResultMap" type="ProductDetail">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="ProductNo" property="productNo" jdbcType="VARCHAR" />
+		<result column="Picture" property="picture" jdbcType="BIGINT" />
+		<result column="OrderBy" property="orderBy" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<select id="getProductDetailByProductNo" parameterType="string" resultMap="BaseResultMap">
+		SELECT ID,ProductNo,Picture,OrderBy,CreateTime from dn_productdetail
+		where ProductNo = #{productNo,jdbcType=VARCHAR} and OrderBy > 0
+		order by orderBy
+	</select>
+	
+	<insert id="insert" parameterType="ProductDetail">
+		INSERT INTO dn_productdetail(ProductNo,Picture,OrderBy,CreateTime)
+		values(#{productNo,jdbcType=VARCHAR},#{picture,jdbcType=BIGINT},#{orderBy,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<update id="update" parameterType="ProductDetail">
+		UPDATE dn_productdetail 
+		<set>
+				Picture = #{picture,jdbcType=BIGINT},
+			<if test="orderBy!=null">
+				OrderBy = #{orderBy,jdbcType=INTEGER},
+			</if>
+			<if test="updateBy!=null">
+				UpdateBy = #{updateBy,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime!=null">
+				UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+</mapper> 

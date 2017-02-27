@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.RefundLogMapper">
+	<resultMap id="BaseResultMap" type="RefundLog">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="TraceLogId" property="traceLogId" jdbcType="VARCHAR" />
+		<result column="OrderNo" property="orderNo" jdbcType="VARCHAR" />
+		<result column="OrderDetailId" property="orderDetailId" jdbcType="BIGINT" />
+		<result column="RefundNum" property="refundNum" jdbcType="INTEGER" />
+		<result column="RefundNo" property="refundNo" jdbcType="VARCHAR" />
+		<result column="RecordType" property="recordType" jdbcType="INTEGER" />
+		<result column="Reason" property="reason" jdbcType="VARCHAR" />
+		<result column="Pictures" property="pictures" jdbcType="VARCHAR" />
+		<result column="PayTypeId" property="payTypeId" jdbcType="VARCHAR" />
+		<result column="Guard" property="guard" jdbcType="INTEGER" />
+		<result column="RefundType" property="refundType" jdbcType="INTEGER" />
+		<result column="RefundState" property="refundState" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="RefundLog" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO dn_refund_log(TraceLogId,OrderNo,OrderDetailId,RefundNo,RecordType,Reason,Pictures,RefundNum,PayTypeId,RefundType,RefundState,CreateTime)
+		values(#{traceLogId,jdbcType=VARCHAR},#{orderNo,jdbcType=VARCHAR},#{orderDetailId,jdbcType=BIGINT},#{refundNo,jdbcType=VARCHAR},
+				#{recordType,jdbcType=INTEGER},#{reason,jdbcType=VARCHAR},#{pictures,jdbcType=VARCHAR},#{refundNum,jdbcType=INTEGER},
+				#{payTypeId,jdbcType=VARCHAR},#{refundType,jdbcType=INTEGER},#{refundState,jdbcType=INTEGER},#{createTime,jdbcType=VARCHAR})
+	</insert>
+	
+	<update id="update" parameterType="RefundLog">
+		UPDATE dn_refund_log
+		<set>
+				RefundState = #{refundState,jdbcType=INTEGER},
+			<if test="guard!=null">
+				Guard = #{guard,jdbcType=INTEGER},
+			</if>
+			<if test="reason!=null">
+				Reason = #{reason,jdbcType=VARCHAR},
+			</if>
+			<if test="updateBy!=null">
+				UpdateBy = #{updateBy,jdbcType=VARCHAR},
+			</if>
+				UpdateTime = #{updateTime,jdbcType=VARCHAR}
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+	<select id="getRefundLogList" parameterType="map" resultMap="BaseResultMap">
+		SELECT RefundNum,RefundType,RecordType,RefundState,Reason,Pictures,CreateTime from dn_refund_log
+		<where>
+			RefundNo = #{refundNo,jdbcType=VARCHAR}
+		</where>
+		order by CreateTime 
+	</select>
+	
+</mapper> 

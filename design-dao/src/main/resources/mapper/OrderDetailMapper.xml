@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.OrderDetailMapper">
+	<resultMap id="BaseResultMap" type="OrderDetail">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="OrderNo" property="orderNo" jdbcType="VARCHAR" />
+		<result column="ProductNo" property="productNo" jdbcType="VARCHAR" />
+		<result column="PtstcID" property="ptstId" jdbcType="BIGINT" />
+		<result column="ProductState" property="productState" jdbcType="INTEGER" />
+		<result column="PreOrderNo" property="preOrderNo" jdbcType="VARCHAR" />
+		<result column="OrderDetailState" property="orderDetailState" jdbcType="INTEGER" />
+		<result column="CurrencyID" property="currencyId" jdbcType="VARCHAR" />
+		<result column="ProductBuyNum" property="ptBuyNum" jdbcType="INTEGER" />
+		<result column="ProductSumMoney" property="ptsumMoney" jdbcType="DECIMAL" />
+		<result column="ModifyCount" property="modifyCount" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<sql id="BaseField">
+		ID,OrderNo,ProductNo,PtstcID,ProductState,PreOrderNo,OrderDetailState,ProductBuyNum,CurrencyID,ProductSumMoney,ModifyCount,CreateTime 
+	</sql>
+	
+	<insert id="insertOrderDetail" parameterType="OrderDetail">
+		INSERT INTO dn_order_detail(OrderNo,ProductNo,PtstcID,ProductState,ProductBuyNum,CurrencyID,ProductSumMoney,OrderDetailState,ModifyCount,CreateTime)
+		values(#{orderNo,jdbcType=VARCHAR},#{productNo,jdbcType=VARCHAR},#{ptstId,jdbcType=BIGINT},#{productState,jdbcType=INTEGER},#{ptBuyNum,jdbcType=INTEGER},
+		#{currencyId,jdbcType=VARCHAR},#{ptsumMoney,jdbcType=DECIMAL},#{orderDetailState,jdbcType=INTEGER},#{modifyCount,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<select id="getOrderDetailList" parameterType="string" resultMap="BaseResultMap">
+		SELECT <include refid="BaseField"></include> from dn_order_detail where OrderNo = #{orderNo,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getOrderDetailById" parameterType="long" resultMap="BaseResultMap">
+		SELECT <include refid="BaseField"></include> from dn_order_detail where ID = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<update id="updateOrderDetailAtnotify" parameterType="OrderDetail">
+		UPDATE dn_order_detail 
+		<set>
+			ModifyCount = ModifyCount+1,
+			OrderNo = #{orderNo,jdbcType=VARCHAR},
+			PreOrderNo = #{preOrderNo,jdbcType=VARCHAR}
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+	<update id="updateOrderDetailSteteAtRefund" parameterType="OrderDetail">
+		UPDATE dn_order_detail set ModifyCount = ModifyCount+1,OrderDetailState = #{orderDetailState,jdbcType=INTEGER} 
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+	<select id="getOrderProductNum" parameterType="string" resultType="int">
+		SELECT SUM(ProductBuyNum) FROM dn_order_detail WHERE orderNo = #{orderNo,jdbcType=VARCHAR}
+	</select>
+	
+	<resultMap id="OrderDetailInfoMap" type="OrderDetailInfo" extends="BaseResultMap">
+		<result column="ColorName" property="colorName" jdbcType="VARCHAR" />
+		<result column="SizeName" property="sizeName" jdbcType="VARCHAR" />
+		<result column="Picture" property="picture" jdbcType="VARCHAR" />
+		<result column="PicturepPath" property="picturepPath" jdbcType="VARCHAR" />
+		<result column="DesignerName" property="designerName" jdbcType="VARCHAR" />
+		<result column="ProductName" property="productName" jdbcType="VARCHAR" />
+		<result column="ColorPicture" property="colorPicture" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<select id="getOrderDetailInfos" parameterType="list" resultMap="OrderDetailInfoMap">
+		SELECT a.ID,a.OrderNo,a.ProductNo,a.PtstcID,a.ProductState,a.PreOrderNo,a.OrderDetailState,a.ProductBuyNum,a.CurrencyID,a.ProductSumMoney,a.ModifyCount,a.CreateTime,
+		IFNULL(b.Picture,c.Picture) AS Picture,getFilePath(IFNULL(b.Picture,c.Picture)) as PicturepPath,c.ProductName,d.DesignerName,e.SizeName,f.name AS ColorName,f.Picture AS ColorPicture 
+		FROM dn_order_detail a 
+		LEFT JOIN dn_product_size_color b ON a.PtstcID = b.ID
+		LEFT JOIN dn_product c ON b.ProductNo = c.ProductNo
+		LEFT JOIN dn_designer d ON c.DesignerId = d.ID
+		LEFT JOIN dn_size e ON b.SizeID = e.ID
+		LEFT JOIN dn_color f ON b.ColorID = f.ID
+		<where>
+			a.OrderNo IN
+			<foreach collection="list" item="item" open="(" close=")" separator=",">
+				#{item,jdbcType=VARCHAR}
+			</foreach>
+		</where>
+	</select>
+	
+</mapper> 

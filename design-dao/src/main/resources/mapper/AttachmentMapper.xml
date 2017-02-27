@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.AttachmentMapper">
+	<resultMap id="BaseResultMap" type="Attachment">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="fileName" property="fileName" jdbcType="VARCHAR" />
+		<result column="filePath" property="filePath" jdbcType="VARCHAR" />
+		<result column="Classify" property="classify" jdbcType="VARCHAR" />
+		<result column="ServerFileName" property="serverFileName" jdbcType="VARCHAR" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="Attachment" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO dn_attachment(fileName,filePath,Classify,ServerFileName,CreateTime)
+		values(#{fileName,jdbcType=VARCHAR},#{filePath,jdbcType=VARCHAR},#{classify,jdbcType=VARCHAR},#{serverFileName,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<select id = "getAttachmentById" parameterType="long" resultMap="BaseResultMap">
+		SELECT ID,fileName,filePath,Classify,ServerFileName,CreateTime from dn_attachment where ID = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<update id="update" parameterType="Attachment">
+		UPDATE dn_attachment set filePath = #{filePath,jdbcType=VARCHAR} where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+	<insert id="batchInsert" parameterType="list" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO dn_attachment(fileName,filePath,Classify,ServerFileName,CreateTime)VALUES
+		<foreach collection="list" separator="," item="item">
+			(#{item.fileName,jdbcType=VARCHAR},#{item.filePath,jdbcType=VARCHAR},#{item.classify,jdbcType=VARCHAR},#{item.serverFileName,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP})
+		</foreach>
+	</insert>
+	
+</mapper> 

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.RetAddressMapper">
+	<resultMap id="BaseResultMap" type="RetAddress">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="userNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="FirstName" property="firstName" jdbcType="VARCHAR" />
+		<result column="LastName" property="lastName" jdbcType="VARCHAR" />
+		<result column="mobileNo" property="mobileNo" jdbcType="VARCHAR" />
+		<result column="CountryID" property="countryId" jdbcType="VARCHAR" />
+		<result column="ProvinceID" property="provinceId" jdbcType="BIGINT" />
+		<result column="CityID" property="cityId" jdbcType="BIGINT" />
+		<result column="RegionID" property="regionId" jdbcType="BIGINT" />
+		<result column="town" property="town" jdbcType="VARCHAR" />
+		<result column="District" property="district" jdbcType="VARCHAR" />
+		<result column="PostCode" property="postCode" jdbcType="VARCHAR" />
+		<result column="Email" property="email" jdbcType="VARCHAR" />
+		<result column="Address" property="address" jdbcType="VARCHAR" />
+		<result column="IsDefault" property="isDefault" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<resultMap id="RetAddressInfoMap"  type="RetAddressInfo" extends="BaseResultMap">
+		<result column="country" property="country" jdbcType="VARCHAR" />
+		<result column="province" property="province" jdbcType="VARCHAR" />
+		<result column="city" property="city" jdbcType="VARCHAR" />
+		<result column="region" property="region" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="RetAddress">
+		INSERT INTO dn_retaddress(userNo,FirstName,LastName,mobileNo,CountryID,ProvinceID,CityID,
+		RegionID,town,District,PostCode,Address,Email,IsDefault,CreateTime,UpdateBy,UpdateTime)
+		values(#{userNo,jdbcType=VARCHAR},#{firstName,jdbcType=VARCHAR},#{lastName,jdbcType=VARCHAR},#{mobileNo,jdbcType=VARCHAR},
+			#{countryId,jdbcType=VARCHAR},#{provinceId,jdbcType=BIGINT},#{cityId,jdbcType=BIGINT},#{regionId,jdbcType=BIGINT},
+			#{town,jdbcType=VARCHAR},#{district,jdbcType=VARCHAR},#{postCode,jdbcType=VARCHAR},#{address,jdbcType=VARCHAR},#{email,jdbcType=VARCHAR},
+			#{isDefault,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP},#{updateBy,jdbcType=VARCHAR},#{updateTime,jdbcType=TIMESTAMP}
+		) 
+	</insert>
+	
+	<select id="getAddressesByUserNo" resultMap="RetAddressInfoMap" parameterType="string">
+		SELECT a.ID,a.userNo,a.FirstName,a.LastName,a.CountryID,a.ProvinceID,a.CityID,a.RegionID,a.mobileNo,
+		a.Email,a.town,a.District,a.PostCode,a.Address,a.IsDefault,a.CreateTime,a.UpdateBy,a.UpdateTime,
+		b.CountryName as country,c.pname as province,d.CityName as city,f.regionName as region  from dn_retaddress a
+		left join dn_country b on a.CountryID = b.id 
+		left join dn_province c on a.ProvinceID = c.id 
+		left join dn_city d on a.CityID = d.id 
+		left join dn_region f on a.RegionID = f.id 
+		where a.userNo =#{userNo,jdbcType=VARCHAR}
+		order by a.IsDefault desc
+	</select>
+	
+	<select id="getAddressNumByUserNo" resultType="int" parameterType="string">
+		SELECT count(0) from dn_retaddress where userNo =#{userNo,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getAddressById" resultMap="RetAddressInfoMap">
+		SELECT a.ID,a.userNo,a.FirstName,a.LastName,a.CountryID,a.ProvinceID,a.CityID,a.RegionID,a.mobileNo,
+		a.Email,a.town,a.District,a.PostCode,a.Address,a.IsDefault,a.CreateTime,a.UpdateBy,a.UpdateTime,
+		b.CountryName as country,c.pname as province,d.CityName as city,f.regionName as region  from dn_retaddress a
+		left join dn_country b on a.CountryID = b.id 
+		left join dn_province c on a.ProvinceID = c.id 
+		left join dn_city d on a.CityID = d.id 
+		left join dn_region f on a.RegionID = f.id 
+		where a.userNo =#{userNo,jdbcType=VARCHAR} and a.ID = #{addressId,jdbcType=BIGINT}
+	</select>
+	
+	<update id="updateById" parameterType="RetAddress">
+		UPDATE dn_retaddress
+		<set>
+			<if test="mobileNo!=null and mobileNo!=''">
+				mobileNo = #{mobileNo,jdbcType=VARCHAR},
+			</if>
+			<if test="countryId!=null and countryId!=''">
+				CountryID = #{countryId,jdbcType=VARCHAR},
+			</if>
+			<if test="provinceId!=null">
+				ProvinceID = #{provinceId,jdbcType=BIGINT},
+			</if>
+			<if test="cityId!=null">
+				CityID = #{cityId,jdbcType=BIGINT},
+			</if>
+			<if test="regionId!=null">
+				RegionID = #{regionId,jdbcType=BIGINT},
+			</if>
+			<if test="email!=null and email!=''">
+				Email = #{email,jdbcType=VARCHAR},
+			</if>
+			<if test="town!=null and town!=''">
+				town = #{town,jdbcType=VARCHAR},
+			</if>
+			<if test="district!=null and district!=''">
+				District = #{district,jdbcType=VARCHAR},
+			</if>
+			<if test="postCode!=null and postCode!=''">
+				PostCode = #{postCode,jdbcType=VARCHAR},
+			</if>
+			<if test="address!=null and address!=''">
+				address = #{address,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime!=null">
+				UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+			</if>
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	
+	<delete id="batchDelete" parameterType="list">
+		DELETE from dn_retaddress where id in
+		<foreach collection="list" separator="," open="(" close=")" item="item">
+			#{item,jdbcType=BIGINT}
+		</foreach>
+	</delete>
+	
+	<select id="setDefault" statementType="CALLABLE" parameterType="map">
+		<![CDATA[{call setDefault(
+				#{id,mode=IN,jdbcType=BIGINT},
+				#{userNo,mode=IN,jdbcType=VARCHAR}
+			)}]]>
+	</select>
+	
+</mapper> 

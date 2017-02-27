@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.CurrencyMapper">
+	<resultMap id="BaseResultMap" type="Currency">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="CurrencyName" property="name" jdbcType="VARCHAR" />
+		<result column="CurrencySign" property="sign" jdbcType="VARCHAR" />
+		<result column="ExchangeRate" property="exchangeRate" jdbcType="DECIMAL" />
+	</resultMap>
+	
+	<select id = "getAllCurrency"  resultMap="BaseResultMap">
+		SELECT ID,CurrencyName,CurrencySign,ExchangeRate from dn_currency
+	</select>
+</mapper> 

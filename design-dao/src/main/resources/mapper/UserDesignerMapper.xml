@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.UserDesignerMapper">
+	<resultMap id="BaseResultMap" type="UserDesigner">
+		<result column="UserNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="DesignerId" property="designerId" jdbcType="BIGINT" />
+		<result column="isInterest" property="isInterest" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<select id="getPraiseNumByDesignerId" parameterType="long" resultType="int">
+		SELECT count(0) from DN_User_Designer where DesignerId = #{designerId,jdbcType=BIGINT}
+	</select>
+	
+	<insert id="insert" parameterType="UserDesigner">
+		INSERT INTO DN_User_Designer(UserNo,DesignerId,isInterest,CreateTime)
+		values(#{userNo,jdbcType=VARCHAR},#{designerId,jdbcType=BIGINT},
+				#{isInterest,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<select id="getUserDesignerByCondition" parameterType="map" resultMap="BaseResultMap">
+		SELECT UserNo,DesignerId,isInterest,CreateTime,UpdateTime from DN_User_Designer 
+		where UserNo = #{userNo,jdbcType=VARCHAR} and DesignerId = #{designerId,jdbcType=BIGINT}
+	</select>
+	
+	<delete id="del" parameterType="UserDesigner">
+		DELETE from DN_User_Designer where UserNo = #{userNo,jdbcType=VARCHAR} and DesignerId = #{designerId,jdbcType=BIGINT} 
+	</delete>
+	
+	<update id="update" parameterType="UserDesigner">
+		UPDATE DN_User_Designer 
+		<set>
+			<if test="isInterest!=null">
+				isInterest = #{isInterest,jdbcType=INTEGER},
+			</if>
+			<if test="updateTime!=null">
+				UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+			</if>
+		</set>
+		where UserNo = #{userNo,jdbcType=VARCHAR} and DesignerId = #{designerId,jdbcType=BIGINT}
+	</update>
+	
+	<select id="getMarkDesignerNum" parameterType="string" resultType="int">
+		select count(0) from dn_user_designer where UserNo = #{userNo,jdbcType=VARCHAR} and isInterest = 1
+	</select>
+</mapper> 

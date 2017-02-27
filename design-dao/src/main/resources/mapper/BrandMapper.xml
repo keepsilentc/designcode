@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.BrandMapper">
+	<resultMap id="BaseResultMap" type="Brand">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="BrandName" property="name" jdbcType="VARCHAR" />
+		<result column="Picture" property="picture" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<select id = "getBrands"  resultMap="BaseResultMap">
+		SELECT ID,BrandName,Picture from dn_brand
+	</select>
+</mapper> 

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.CouponUserMapper">
+	<resultMap id="BaseResultMap" type="CouponUser">
+		<id column="ID" property="id" jdbcType="BIGINT"/>
+		<result column="UserNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="CouponNo" property="couponNo" jdbcType="VARCHAR" />
+		<result column="IsEnable" property="isEnable" jdbcType="INTEGER" />
+		<result column="ModifyCount" property="modifyCount" jdbcType="INTEGER" />
+		<result column="UserCouponState" property="userCouponState" jdbcType="INTEGER" />
+		<result column="UseTime" property="useTime" jdbcType="TIMESTAMP" />
+		<result column="ReceiveTime" property="receiveTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="CouponUser" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO dn_user_coupon(UserNo,CouponNo,IsEnable,ModifyCount,UserCouponState,ReceiveTime)
+		values(#{userNo,jdbcType=VARCHAR},#{couponNo,jdbcType=VARCHAR},#{isEnable,jdbcType=INTEGER},
+				#{modifyCount,jdbcType=INTEGER},#{userCouponState,jdbcType=INTEGER},#{receiveTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<select id="getCouponUser" resultMap="BaseResultMap">
+		SELECT ID,UserNo,CouponNo,IsEnable,ModifyCount,UserCouponState,UseTime,ReceiveTime from dn_user_coupon
+		where CouponNo = #{couponNo,jdbcType=VARCHAR} and UserNo = #{userNo,jdbcType=VARCHAR}
+	</select>
+	
+	<update id="update" parameterType="CouponUser">
+		UPDATE  dn_user_coupon 
+		<set>
+			ModifyCount = ModifyCount + 1,
+			<if test="userCouponState!=null">
+				UserCouponState = #{userCouponState,jdbcType=INTEGER},
+			</if>
+			<if test="useTime!=null">
+				UseTime = #{useTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where UserNo = #{userNo,jdbcType=VARCHAR} and CouponNo = #{couponNo,jdbcType=VARCHAR} and ModifyCount = #{modifyCount,jdbcType=INTEGER} and IsEnable = 1
+	</update>
+	
+	<select id="getCouponReceivedQuantity" parameterType="string" resultType="int">
+		SELECT count(0) from dn_user_coupon where CouponNo = #{couponNo,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getCouponUserQuantity" resultType="int">
+		SELECT count(0) from dn_user_coupon where CouponNo = #{couponNo,jdbcType=VARCHAR} and UserNo = #{userNo,jdbcType=VARCHAR}
+	</select>
+	
+</mapper> 

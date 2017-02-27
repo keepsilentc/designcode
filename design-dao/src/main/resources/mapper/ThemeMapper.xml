@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.ThemeMapper">
+	<resultMap id="BaseResultMap" type="Theme" >
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="DesignerId" property="designerId" jdbcType="BIGINT" />
+		<result column="ThemeName" property="themeName" jdbcType="VARCHAR" />
+		<result column="Described" property="describe" jdbcType="VARCHAR" />
+		<result column="Picture" property="picture" jdbcType="BIGINT" />
+		<result column="IsEnable" property="isEnable" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<select id="getThemeByProductNo" parameterType="string" resultMap="BaseResultMap">
+		SELECT a.ID,a.DesignerId,a.ThemeName,a.Picture,a.PreSellStartTime,a.PreSellEndTime,a.CreateTime 
+		FROM dn_theme a INNER JOIN dn_product b on a.ID = b.ThemeID where b.ProductNo = #{productNo,jdbcType=VARCHAR}
+	</select>
+	
+	<resultMap id="PreSellThemeInfoResultMap" type="PreSellThemeInfo" extends="BaseResultMap">
+		<result column="DesignerName" property="designerName" jdbcType="VARCHAR" />
+		<result column="Photo" property="designerAvatar" jdbcType="BIGINT" />
+		<result column="PreSellEndTime" property="preSellEndTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<select id="getPreSellThemes" parameterType="map" resultMap="PreSellThemeInfoResultMap">
+		SELECT a.ID,a.DesignerId,getLatestPresellEndTime(a.ID) as preSellEndTime,a.ThemeName,a.Picture,b.DesignerName,b.Photo
+		FROM dn_theme a LEFT JOIN dn_designer b ON a.DesignerId = b.id  
+		WHERE a.IsEnable = 1 and EXISTS(SELECT f.id FROM dn_product f WHERE f.ThemeID = a.ID AND f.State = 20 AND f.IsEnable = 1 AND f.PreSellEndTime >= now())
+		limit #{pageIndex,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+	</select>
+	
+</mapper> 

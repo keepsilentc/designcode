@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.UserStatusMapper">
+	<resultMap id="BaseResultMap" type="UserStatus">
+		<result column="UserNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="StatusID" property="statusId" jdbcType="BIGINT" />
+		<result column="isPraise" property="isPraise" jdbcType="INTEGER" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="UserStatus">
+		INSERT INTO dn_user_status(UserNo,StatusID,isPraise,CreateTime)
+		values(#{userNo,jdbcType=VARCHAR},#{statusId,jdbcType=BIGINT},#{isPraise,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<delete id="del" parameterType="UserStatus">
+		DELETE from dn_user_status where UserNo = #{userNo,jdbcType=VARCHAR} and StatusID = #{statusId,jdbcType=BIGINT}
+	</delete>
+	
+	<select id="getUserStatusByCondition" parameterType="map" resultMap="BaseResultMap">
+		SELECT UserNo,StatusID,isPraise,CreateTime from dn_user_status 
+		where UserNo = #{userNo,jdbcType=VARCHAR} and StatusID = #{statusId,jdbcType=BIGINT}
+	</select>
+	
+	<select id="getLatestUserByStatusId" parameterType="long" resultMap="BaseResultMap">
+		SELECT UserNo,StatusID,CreateTime from dn_user_status 
+		WHERE StatusID = #{statusId,jdbcType=BIGINT} and isPraise = 1 ORDER BY CreateTime DESC LIMIT 0,1 
+	</select>
+	
+	<select id="getMarkStatusNum" parameterType="string" resultType="int">
+		SELECT count(0) from dn_user_status where UserNo = #{userNo,jdbcType=VARCHAR} and isPraise = 1
+	</select>
+	
+</mapper> 

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.RefundDetailMapper">
+	<resultMap id="BaseResultMap" type="RefundDetail">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="RefundNo" property="refundNo" jdbcType="VARCHAR" />
+		<result column="RefundDetailNo" property="refundDetailNo" jdbcType="VARCHAR" />
+		<result column="TradeNo" property="tradeNo" jdbcType="VARCHAR" />
+		<result column="PayTypeId" property="payTypeId" jdbcType="VARCHAR" />
+		<result column="CurrencyID" property="currencyId" jdbcType="VARCHAR" />
+		<result column="RefundDetailMoney" property="refundDetailMoney" jdbcType="DECIMAL" />
+		<result column="RefundState" property="refundState" jdbcType="INTEGER" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="RefundDetail" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO DN_Refund_detail(RefundNo,RefundDetailNo,PayTypeId,TradeNo,CurrencyID,RefundDetailMoney,RefundState,CreateTime)
+		values(#{refundNo,jdbcType=VARCHAR},#{refundDetailNo,jdbcType=VARCHAR},#{payTypeId,jdbcType=VARCHAR},#{tradeNo,jdbcType=VARCHAR},
+		#{currencyId,jdbcType=VARCHAR},#{refundDetailMoney,jdbcType=DECIMAL},#{refundState,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<update id="update" parameterType="RefundDetail">
+		UPDATE DN_Refund_detail
+		<set>
+			RefundState = #{refundState,jdbcType=INTEGER},
+			UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+</mapper> 

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.TradeMapper">
+	<resultMap id="BaseResultMap" type="Trade">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="userNo" property="userNo" jdbcType="VARCHAR" />
+		<result column="CurrencyID" property="currencyId" jdbcType="VARCHAR" />
+		<result column="OrderNo" property="orderNo" jdbcType="VARCHAR" />
+		<result column="OrderMoney" property="orderMoney" jdbcType="DECIMAL" />
+		<result column="PayTypeId" property="payTypeId" jdbcType="VARCHAR" />
+		<result column="TradeNo" property="tradeNo" jdbcType="VARCHAR" />
+		<result column="PayTime" property="payTime" jdbcType="TIMESTAMP" />
+		<result column="payMoney" property="payMoney" jdbcType="DECIMAL" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="Trade" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO dn_trade(userNo,CurrencyID,OrderNo,OrderMoney,PayTypeId,TradeNo,PayTime,payMoney,CreateTime)
+		values(#{userNo,jdbcType=VARCHAR},#{currencyId,jdbcType=VARCHAR},#{orderNo,jdbcType=VARCHAR},#{orderMoney,jdbcType=DECIMAL},
+			#{payTypeId,jdbcType=VARCHAR},#{tradeNo,jdbcType=VARCHAR},#{payTime,jdbcType=TIMESTAMP},
+			#{payMoney,jdbcType=DECIMAL},#{createTime,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<select id="getTradeByOrderNo" parameterType="string" resultMap="BaseResultMap">
+		SELECT id,userNo,CurrencyID,OrderNo,OrderMoney,PayTypeId,TradeNo,PayTime,payMoney,CreateTime
+		from dn_trade where OrderNo = #{orderNo,jdbcType=VARCHAR}
+	</select>
+	
+</mapper> 

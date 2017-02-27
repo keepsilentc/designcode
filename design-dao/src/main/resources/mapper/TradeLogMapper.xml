@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.dao.persist.TradeLogMapper">
+	<resultMap id="BaseResultMap" type="TradeLog">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="TraceLogId" property="traceLogId" jdbcType="VARCHAR" />
+		<result column="OrderNo" property="orderNo" jdbcType="VARCHAR" />
+		<result column="TradeNo" property="tradeNo" jdbcType="VARCHAR" />
+		<result column="PayTypeId" property="payTypeId" jdbcType="VARCHAR" />
+		<result column="IsSignVerified" property="isSignVerified" jdbcType="INTEGER" />
+		<result column="IsSuccess" property="isSuccess" jdbcType="INTEGER" />
+		<result column="FailReason" property="failReason" jdbcType="VARCHAR" />
+		<result column="Notify" property="notify" jdbcType="VARCHAR" />
+		<result column="UpdateBy" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UpdateTime" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CreateTime" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="TradeLog" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO dn_trade_log(TraceLogId,OrderNo,TradeNo,PayTypeId,Notify,CreateTime)
+		values(#{traceLogId,jdbcType=VARCHAR},#{orderNo,jdbcType=VARCHAR},#{tradeNo,jdbcType=VARCHAR},#{payTypeId,jdbcType=VARCHAR},
+			#{notify,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<update id="update" parameterType="TradeLog">
+		UPDATE dn_trade_log
+		<set>
+			<if test="isSignVerified!=null">
+				IsSignVerified = #{isSignVerified,jdbcType=INTEGER},
+			</if>
+			<if test="isSuccess!=null">
+				IsSuccess = #{isSuccess,jdbcType=INTEGER},
+			</if>
+			<if test="failReason!=null">
+				FailReason = #{failReason,jdbcType=VARCHAR},
+			</if>
+				UpdateBy = #{updateBy,jdbcType=VARCHAR},
+				UpdateTime = #{updateTime,jdbcType=TIMESTAMP}
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+</mapper> 
